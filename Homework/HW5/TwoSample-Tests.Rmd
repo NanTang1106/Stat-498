@@ -1,0 +1,165 @@
+---
+title: "TwoSample-Tests"
+author: "Nan Tang"
+date: "2018/4/28"
+output: html_document
+---
+
+## Exercies 1
+```{r Exercies 1 Qa,b}
+#Generate two samples with same value of mean and standard deviation.
+groupA <- rnorm(n = 100, mean = 180, sd = 40)
+groupB <- rnorm(n = 100, mean = 180, sd = 40)
+
+#Drawing two histograms.
+par(mfrow = c(2, 1), mar = c(4,4,2,2))
+cBreaks <- seq(-1000, 1000, by = 25)
+hist(groupA, breaks = cBreaks, xlim = c(50, 350), col = "gray", main = "")
+hist(groupB, breaks = cBreaks, xlim = c(50, 350), col = "gray", main = "")
+
+#Apply two sample t-test on two samples.
+t.test(groupA, groupB)
+
+```
+
+Q a: From the sample t-test, we can get that means of two samples are 178.77 and 181.1686, and the p-value of difference is 0.6943. Under the significance level of 5%, we cannot reject the null hypothesis. 
+
+Q b: I expected that 5% of all the experiment would display a p-value less than 0.05.
+
+```{r Exercise 1 Qc,d}
+#Simulate 1000 experiments.
+p_values <- numeric(1000)
+for(i in 1 : 1000) {
+  groupA <- rnorm(n = 100, mean = 180, sd = 40)
+  groupB <- rnorm(n = 100, mean = 180, sd = 40)
+  p_values[i] <- t.test(groupA, groupB)$p.value
+}
+#View first 10 items in p_values.
+p_values[1 : 10]
+#Calculate proportion of p-values that are greater than 0.05.
+sum(p_values <= 0.05)
+
+```
+
+Q c: P-values between experiments are quite different from each other.
+
+Q d: Within the 1000 experiments, 59 of them have a p-value less than 0.05, of which the proportion is 5.9%.
+
+```{r Exercise 1 Qe}
+#Draw a histogram of p-values, and a vertical line of p-value = 0.05
+par(mfrow = c(1, 1))
+hist(p_values, breaks = 20, xlab = "P-values of Sample Difference", main = "", col = "gray")
+abline(v = 0.05, col = "red", lwd = 3)
+
+```
+
+##Exercise 2
+
+```{r Exercise 2 Qa,b}
+#Simulate two samples with slightly different mean values but same distribution. 
+groupA <- rnorm(10000, 181, 40)
+groupB <- rnorm(10000, 179, 40)
+
+par(mfrow = c(2, 1), mar = c(4,4,2,2))
+cBreaks <- seq(-1000, 1000, by = 25)
+hist(groupA, breaks = cBreaks, xlim = c(50, 350), col = "gray", main = "")
+hist(groupB, breaks = cBreaks, xlim = c(50, 350), col = "gray", main = "")
+
+t.test(groupA, groupB)
+```
+
+Q a: These two distribution seem to be similiar to each other.
+
+Q b: T-test tells that the p-value of sample difference is 0.0003 which is much smaller than 0.05. Therefore, the difference is statistically significant to reject null hypothesis.
+
+```{r Exercise 2 Qc,d,e}
+#Simulate 1000 experiments.
+p_values <- numeric(1000)
+for(i in 1 : 1000) {
+  groupA <- rnorm(n = 10000, mean = 181, sd = 40)
+  groupB <- rnorm(n = 10000, mean = 179, sd = 40)
+  p_values[i] <- t.test(groupA, groupB)$p.value
+}
+
+sum(p_values < 0.05)
+
+```
+
+Q c: 951 out of 1000 simulations displayed a p-value less than 0.05.
+
+Q d: In my opinion, sample size of 10000 is enough to detect the difference in mean of 2.
+
+Q e: For almost 95% experiments are significant in rejecting the null hypothesis, sample size of ten thousand is large enough to tell difference between two populations. 
+
+##Exercise 3
+
+```{r Exercise 3 Qa,b}
+#Simulate 1000 experiments with two samples with largely different mean values and relately small sample size. 
+p_values <- numeric(1000)
+for(i in 1 : 1000) {
+  groupA <- rnorm(n = 20, mean = 190, sd = 40)
+  groupB <- rnorm(n = 20, mean = 170, sd = 40)
+  p_values[i] <- t.test(groupA, groupB)$p.value
+}
+
+sum(p_values < 0.05)
+
+```
+
+Q a: 32.8% of total experiments have a p-value less than 0.05.
+
+Q b: The result doesn't seem to be correct. 
+
+##Exercise 4
+
+```{r Exercise 4 Qa,b,c}
+T.p_values <- numeric(10000)
+F.p_values <- numeric(10000)
+
+for (i in 1 : 10000) {
+  T.groupA <- rnorm(5, 180, 40)
+  T.groupB <- rnorm(5, 180, 40)
+  F.groupA <- rnorm(5, 180, 40)
+  F.groupB <- rnorm(5, 185, 40)
+  T.p_values[i] <- t.test(T.groupA, T.groupB)$p.value
+  F.p_values[i] <- t.test(F.groupA, F.groupB)$p.value
+}
+
+T.reject<- sum(T.p_values <= 0.05)
+F.reject<- sum(F.p_values <= 0.05)
+T.reject / 10000
+F.reject / 10000
+
+#Calculate the frequency of type one error.
+type1.prob <- T.reject / (T.reject + F.reject)
+type1.prob
+
+```
+
+Q a: The probability of rejecting null hypothesis in the second group where true difference exists is sightly higher than the probability of rejecting the null in first group. 
+
+Q b: Nearly 50% chance of getting a type one error. 
+
+Q c: I would never be convinced by those kind of published study if I find their experiment contained only small sample sizes. 
+
+```{r Exercies 5 Qa, b, c}
+cDiff <- rep(NA, 10000)
+p_values <- numeric(10000)
+
+for(i in 1 :10000) {
+  groupA <- rnorm(5, 180, 40)
+  groupB <- rnorm(5, 185, 40)
+  cDiff[i] <- mean(groupB) - mean(groupA)
+  p_values[i] <- t.test(groupA, groupB)$p.value
+}
+
+hist(cDiff, main = "", col = "gray")
+hist(cDiff[p_values <= 0.05], main = "", breaks = 20, col = "gray")
+
+```
+
+Q a: We have almost 0% chance to observe a difference in mean values that is close to true difference which is 5. 
+
+Q b: From the second histogram we can easily find that the right cluster has a larger quantity than the left, which implies in most situation that p_value less than 0.05, group B has bigger mean value than A has. 
+
+Q c: Based on the histogram, we get approximately 60% chance to overestimate difference in mean, since when p value <= 0.05, there are almost 60% sample means' difference greater than 5. 

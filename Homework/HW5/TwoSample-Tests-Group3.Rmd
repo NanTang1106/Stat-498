@@ -1,0 +1,56 @@
+---
+title: "TwoSample-Test-Group6"
+author: "Nan Tang, Yao Yi, Cindy Chiu"
+date: "2018/4/28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exercise 3 Assignment 
+
+```{r Exercise 3 assignment}
+#Generate 1000 experiments for samples of various sizes.
+simulations <- 1000
+sample.size <- c(seq(10, 100, by = 10),200, 500)
+p_values <- array(NA, dim = c(simulations, length(sample.size)))
+for(i in 1 : simulations) {
+  for(j in 1 : length(sample.size)) {
+    groupA <- rnorm(sample.size[j], mean = 190, sd = 40)
+    groupB <- rnorm(sample.size[j], mean = 170, sd = 40)
+    p_values[i,j] <- t.test(groupA, groupB)$p.value
+  }
+}
+
+prop.sum <- numeric(length(sample.size))
+for (i in 1 : length(sample.size)) {
+  prop.sum[i] <- sum(p_values[, i] < 0.05) / simulations
+}
+prop.sum
+
+par(mfrow = c(1, 1))
+barplot(prop.sum, ylim = 0:1, xlab = "Sample Size", ylab = "Proportion",
+        names.arg = sample.size, col = "skyblue", main = "Proportion of P-Value < 0.05")
+
+```
+
+Q a: By simulating samples of various sizes, we found that the proportion of P-value less than 0.05 increases alone with increases in sample size. 
+
+Q b: Since we knew that true difference exists between these two groups, the null hypothesis should be wrong. However, our work displayed that the probability of rejecting null under significance level of 0.05 is relatively low when sample size is not big enough. From this experiment, we could learn that the effect of sample size on sample tests is significant. 
+
+``` {r Exercise 3 assignment Qc}
+prop.sum <- numeric(length(sample.size))
+for (i in 1 : length(sample.size)) {
+  prop.sum[i] <- sum(p_values[, i] <= 0.01) / simulations
+}
+prop.sum
+
+par(mfrow = c(1, 1))
+barplot(prop.sum, ylim = 0:1, xlab = "Sample Size", ylab = "Proportion",
+        names.arg = sample.size, col = "skyblue", main = "Proportion of P-Value < 0.01")
+
+```
+
+Q c: After we changed the significance level from 0.05 to 0.01, the proportion of p-value that less than 0.01 for each size of sample tended to be lower(compare to p-value < 0.05). The positive relation between sample size and proportion still exists. 
